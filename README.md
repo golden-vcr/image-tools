@@ -1,7 +1,7 @@
 # image-tools
 
-The **image-tools** repo contains and scripts that aid in the process of scanning and
-cataloguing new tapes as they're added to the Golden VCR library. This is a largely
+The **image-tools** repo contains tools and scripts that aid in the process of scanning
+and cataloguing new tapes as they're added to the Golden VCR library. This is a largely
 manual workflow that takes place locally.
 
 ## Prerequisites
@@ -17,6 +17,10 @@ manual workflow that takes place locally.
    `scan_$(nnnn).png`. Note the hotkey associated with this new profile (e.g. `F2`).
 6. Install the latest version of [Python 3](https://www.python.org/downloads/).
 7. Install dependencies with `pip install -r requirements.txt`.
+8. Prepare an `.env` file defining the environment variables required by
+   [`upload.py`](./upload.py). If you have the [`terraform`](https://github.com/golden-vcr/terraform)
+   repo cloned alongside this one, simply open a shell there and run
+   `terraform output -raw images_s3_env > ../image-tools/.env`.
 
 ## Workflow
 
@@ -135,8 +139,31 @@ image:
 - If the top of the text is at the left of the frame, press **Left**.
 - If the top of the text is at the right of the frame, press **Right**.
 
-The script will also generate a small thumbnail image for each `a` image that it sees:
-e.g. `0053_a.png` will be used to generate `0053_thumb.jpg`.
-
 When finished, review your images in the `scans` directory: if they're cropped as
 expected, then they're ready to be uploaded.
+
+### Optimizing and uploading images
+
+Cropped, full-resolution scans are stored as PNG images in the `scans` directory.
+Before images are uploaded, we convert them to compressed JPG images, and we also
+generate a small thumbnail image for each `a` image: e.g. `0053_a.jpg` will be resized
+to generate `0053_thumb.jpg`.
+
+These compressed JPG images are stored locally in a directory called `storage`, which
+mirrors the layout of the S3-compatible bucket (in DigitalOcean Spaces) to which the
+files are uploaded to be served to end-users.
+
+Once you've scanned and cropped a new set of images for a batch of tapes, you can use
+the [`upload.py`](./upload.py) script to upload the new images to a DigitalOcean Spaces
+bucket, using the S3 API. Simply run:
+
+- `python upload.py`
+
+First, the script will identify any new images in `scans` that haven't yet been copied
+to `storage`, and it will generate the requisite JPG images (including thumbnails) and
+write them to `storage`.
+
+Next, the script will compare the md5 hashes of all files in `storage` against the
+hashes of all files in the bucket. Any JPG files that are new or modified will then be
+uploaded to the bucket. Once the upload script completes successfully, all scanned and
+cropped images are now synced to the Spaces bucket.

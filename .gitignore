@@ -1,3 +1,11 @@
+# Ignore the .env file, it contains sensitive values used to authenticate the S3 client
+.env
+
 # Ignore the scans directory: this is the default working directory for our scanned
 # images, which we don't want to version
 /scans
+
+# Ignore the storage directory: the contents of this directory will be synced to our
+# remote storage bucket as part of the upload process, and we'll move images from
+# scans/ to storage/ to indicate that they're finished
+/storage

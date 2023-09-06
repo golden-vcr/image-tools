@@ -7,8 +7,6 @@ import numpy as np
 import cv2
 
 IMAGES_DIR = 'scans'
-THUMBNAIL_W = 275
-THUMBNAIL_H = 500
 
 
 def read_png_dimensions(filepath):
@@ -136,30 +134,6 @@ def interactive_crop(plate, orig):
             last_rendered_crop_dim = (new_h, new_w)
 
 
-def generate_thumbnail(orig):
-    if orig.shape[1] > orig.shape[0]:
-        img = cv2.rotate(orig, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    else:
-        img = orig
-
-    h, w = img.shape[:2]
-    img_aspect_ratio = w / h
-    thumbnail_aspect_ratio = THUMBNAIL_W / THUMBNAIL_H
-
-    new_h = THUMBNAIL_H
-    new_w = round((THUMBNAIL_H / h) * w)
-    if new_w < THUMBNAIL_W:
-        new_w = THUMBNAIL_W
-        new_h = round((THUMBNAIL_W / w) * h)
-        assert new_h >= THUMBNAIL_H
-    
-    resized = cv2.resize(img, [new_w, new_h], interpolation=cv2.INTER_AREA)
-    offset_x = int((new_w - THUMBNAIL_W) / 2)
-    offset_y = int((new_h - THUMBNAIL_H) / 2)
-    cropped = resized[offset_y:offset_y+THUMBNAIL_H, offset_x:offset_x+THUMBNAIL_W]
-    return cropped
-
-
 if __name__ == '__main__':
     # Load a clean background-plate scan so we can diff against each scanned image
     plate_path = os.path.join(IMAGES_DIR, '_plate.png')
@@ -178,17 +152,7 @@ if __name__ == '__main__':
             continue
         filepath = os.path.join(IMAGES_DIR, filename)
 
-        # Determine whether we need to generate a new thumbnail for this image
-        thumb_filename = ''
-        thumb_filepath = ''
-        needs_thumbnail = False
-        if match.group(1) == 'a':
-            thumb_filename = filename.rsplit('_', 1)[0] + '_thumb.jpg'
-            thumb_filepath = os.path.join(IMAGES_DIR, thumb_filename)
-            needs_thumbnail = not os.path.isfile(thumb_filepath)
-
         # Determine if the image has already been cropped, in which case we can skip loading it for now
-        cropped = None
         existing_w, existing_h = read_png_dimensions(filepath)
         needs_crop = existing_w == plate.shape[1] and existing_h == plate.shape[0]
         if needs_crop:
@@ -200,14 +164,3 @@ if __name__ == '__main__':
         else:
             # Skip cropping if the image size is no longer the original scan size
             print('%s already cropped.' % filename)
-
-        # If we need to generate a thumbnail, do so from the cropped image
-        if thumb_filename:
-            if needs_thumbnail:
-                if cropped is None:
-                    cropped = cv2.imread(filepath)
-                thumbnail = generate_thumbnail(cropped)
-                cv2.imwrite(thumb_filepath, thumbnail, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
-                print('%s generated.' % thumb_filename)
-            else:
-                print('%s already exists.' % thumb_filename)
