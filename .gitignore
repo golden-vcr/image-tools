@@ -1,0 +1,3 @@
+# Ignore the scans directory: this is the default working directory for our scanned
+# images, which we don't want to version
+/scans
