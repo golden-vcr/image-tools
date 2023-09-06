@@ -15,6 +15,8 @@ manual workflow that takes place locally.
 5. Open NAPS2 and create a profile to scan at 300 dpi, letter size, with auto-save
    configured to write images to your work directory with the filename pattern
    `scan_$(nnnn).png`. Note the hotkey associated with this new profile (e.g. `F2`).
+6. Install the latest version of [Python 3](https://www.python.org/downloads/).
+7. Install dependencies with `pip install -r requirements.txt`.
 
 ## Workflow
 
@@ -88,3 +90,53 @@ Once you've scanned all the tapes that you previously catalogued, you can grab a
 batch of tapes and add them to the spreadsheet. When you've finished scanning and are
 ready to move on, then it's time to process your scanned images and get them ready for
 upload.
+
+### Scanning a clean background plate
+
+Once you've finished scanning and you're about to move on to cropping, you'll want to
+scan one more image:
+
+1. Clear the bed of the scanner, and clean the glass if necessary.
+2. Leave the lid opened to the same approximate angle it's been opened to while
+   scanning tapes.
+3. Initiate a scan.
+4. Rename the resulting image to `_plate.png`.
+
+This image is required by the automatic cropping script.
+
+### Cropping/rotating tape images and generating thumbnails
+
+Once your `scans` directory has been populated with new scanned-and-renamed images, you
+can use the [`crop.py`](./crop.py) script to run through them and quickly crop each
+image. To get started:
+
+- Run `python3 crop.py`
+
+The script will automatically iterate through scanned images, allowing you to crop each
+one, and suggesting a default crop based on where it thinks the edges of the tape lie
+in the image. If an image has already been cropped, the script will skip it: it's safe
+to re-run the script as many times as you like for the same set of images.
+
+For each image that needs to be cropped, a window will appear showing the tape image,
+with a green mask indicating where the image will be cropped. From here, you may:
+
+- Click on the image to adjust where the crop will occur.
+- Press **R** to reset the crop to the original, automatic result.
+- Press the **Up"**, **Down**, **Left**, or **Right** arrow keys to accept the crop,
+  rotating the image as needed so that the indicated direction becomes up.
+- Press **Q** or **Esc** to exit the program and perform no further cropping.
+
+When accepting the crop, imagine that you're pointing toward the top of the text in the
+image:
+
+- If the image is already in the correct orientation: press **Up**.
+- If the top of the text is at the bottom of the frame, such that the image needs to be
+  rotated 180 degrees, press **Down**.
+- If the top of the text is at the left of the frame, press **Left**.
+- If the top of the text is at the right of the frame, press **Right**.
+
+The script will also generate a small thumbnail image for each `a` image that it sees:
+e.g. `0053_a.png` will be used to generate `0053_thumb.jpg`.
+
+When finished, review your images in the `scans` directory: if they're cropped as
+expected, then they're ready to be uploaded.
