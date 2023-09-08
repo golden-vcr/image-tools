@@ -80,7 +80,7 @@ def apply_crop_overlay(orig, new_h, new_w):
     return orig + overlay
 
 
-def interactive_crop(plate, orig):
+def interactive_crop(filepath, plate, orig):
     filename = os.path.basename(filepath)
     h, w = orig.shape[:2]
     scale_factor = get_scale_factor_to_fit(orig, 1920, 1080)
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         if needs_crop:
             # Prompt the user to crop the image, then overwrite it
             orig = cv2.imread(filepath)
-            cropped = interactive_crop(plate, orig)
+            cropped = interactive_crop(filepath, plate, orig)
             cv2.imwrite(filepath, cropped)
             print('%s overwritten.' % filename)
         else:
