@@ -167,3 +167,21 @@ Next, the script will compare the md5 hashes of all files in `storage` against t
 hashes of all files in the bucket. Any JPG files that are new or modified will then be
 uploaded to the bucket. Once the upload script completes successfully, all scanned and
 cropped images are now synced to the Spaces bucket.
+
+### Assigning a color to each tape
+
+The tapes API associated a hex-formatted, RGB color value with each tape, so that the
+app can display an appropriately-colored placeholder prior to loading the tape
+thumbnail. The color for each tape is computed from the dominant color in the thumbnail
+image, and these color values are stored in a "Color" column in the inventory
+spreadsheet.
+
+To assign colors to a new bach of tapes:
+
+1. Ensure that all tapes have their images scanned, cropped, and uploaded.
+2. Run `python get-color.py <tape-id>`, substituting the ID of the first tape in the
+   batch.
+3. Copy the resulting hex values to the clipboard.
+4. In the [Golden VCR Inventory](https://docs.google.com/spreadsheets/d/1cR9Lbw9_VGQcEn8eGD2b5MwGRGzKugKZ9PVFkrqmA7k/edit),
+   select the **Color** cell in the row for the starting tape, then paste the color
+   values.
