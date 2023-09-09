@@ -16,6 +16,10 @@ THUMBNAIL_H = 500
 SCAN_FILENAME_REGEX = re.compile(r'\d{4}_[a-z]\.png')
 ETAG_MD5_REGEX = re.compile(r'"?([0-9a-f]{32})"?')
 
+POST_SCAN_BLACK_POINT = 16
+POST_SCAN_WHITE_POINT = 244
+POST_SCAN_SATURATION_SCALE = 1.15
+
 FULL_RECOPY = len(sys.argv) > 1 and sys.argv[1] == '--full-recopy'
 
 
@@ -117,7 +121,7 @@ def copy_to_storage():
 
         print('Compressing image %s and copying to storage...' % basename)
         image = cv2.imread(scan_filepath)
-        image = saturate(adjust_levels(image, 20, 240), 1.2)
+        image = saturate(adjust_levels(image, POST_SCAN_BLACK_POINT, POST_SCAN_WHITE_POINT), POST_SCAN_SATURATION_SCALE)
         cv2.imwrite(storage_filepath, image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
         if basename.endswith('_a'):
