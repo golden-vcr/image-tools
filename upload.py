@@ -5,6 +5,7 @@ import hashlib
 
 from dotenv import load_dotenv
 import cv2
+import numpy as np
 import boto3
 import botocore
 
@@ -14,6 +15,8 @@ THUMBNAIL_W = 275
 THUMBNAIL_H = 500
 SCAN_FILENAME_REGEX = re.compile(r'\d{4}_[a-z]\.png')
 ETAG_MD5_REGEX = re.compile(r'"?([0-9a-f]{32})"?')
+
+FULL_RECOPY = len(sys.argv) > 1 and sys.argv[1] == '--full-recopy'
 
 
 def require_env_var(name):
@@ -83,20 +86,38 @@ def generate_thumbnail(orig):
     return cropped
 
 
+def adjust_levels(image, black_point, white_point):
+    in_black = np.array([black_point, black_point, black_point], dtype=np.float32)
+    in_white = np.array([white_point, white_point, white_point], dtype=np.float32)
+    in_gamma = np.array([1.0, 1.0, 1.0], dtype=np.float32)
+    out_black = np.array([0, 0, 0], dtype=np.float32)
+    out_white = np.array([255, 255, 255], dtype=np.float32)
+    image = np.clip((image - in_black) / (in_white - in_black), 0, 255)
+    image = (image ** (1 / in_gamma)) * (out_white - out_black) + out_black
+    return np.clip(image, 0, 255).astype(np.uint8)
+
+
+def saturate(image, saturation_scale):
+    hsv = cv2.cvtColor(image.astype(np.float32), cv2.COLOR_BGR2HSV)
+    hsv *= (1.0, saturation_scale, 1.0)
+    return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR).astype(np.uint8)
+
+
 def copy_to_storage():
     if not os.path.isdir(STORAGE_DIR):
         os.makedirs(STORAGE_DIR)
 
     scan_basenames = {os.path.splitext(f)[0] for f in os.listdir(IMAGES_DIR) if SCAN_FILENAME_REGEX.match(f)}
     storage_basenames = {os.path.splitext(f)[0] for f in os.listdir(STORAGE_DIR)}
+    basenames_to_copy = scan_basenames if FULL_RECOPY else (scan_basenames - storage_basenames)
 
-    for basename in sorted(scan_basenames - storage_basenames):
+    for basename in sorted(basenames_to_copy):
         scan_filepath = os.path.join(IMAGES_DIR, basename + '.png')
         storage_filepath = os.path.join(STORAGE_DIR, basename + '.jpg')
 
         print('Compressing image %s and copying to storage...' % basename)
         image = cv2.imread(scan_filepath)
-        thumbnail = generate_thumbnail(image)
+        image = saturate(adjust_levels(image, 20, 240), 1.2)
         cv2.imwrite(storage_filepath, image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
         if basename.endswith('_a'):
