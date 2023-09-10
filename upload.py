@@ -11,6 +11,7 @@ import botocore
 
 IMAGES_DIR = 'scans'
 STORAGE_DIR = 'storage'
+FULL_IMAGE_SCALE = 0.5
 THUMBNAIL_W = 275
 THUMBNAIL_H = 500
 SCAN_FILENAME_REGEX = re.compile(r'\d{4}_[a-z]\.png')
@@ -122,6 +123,7 @@ def copy_to_storage():
         print('Compressing image %s and copying to storage...' % basename)
         image = cv2.imread(scan_filepath)
         image = saturate(adjust_levels(image, POST_SCAN_BLACK_POINT, POST_SCAN_WHITE_POINT), POST_SCAN_SATURATION_SCALE)
+        image = cv2.resize(image, [image.shape[1] * FULL_IMAGE_SCALE, image.show[0] * FULL_IMAGE_SCALE], interpolation=cv2.INTER_AREA)
         cv2.imwrite(storage_filepath, image, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
         if basename.endswith('_a'):
