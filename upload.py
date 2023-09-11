@@ -179,8 +179,8 @@ def copy_to_storage():
             image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         # Scale the image down for the final compressed version
-        new_h, new_w = [int(image.shape[1] * FULL_IMAGE_SCALE), int(image.shape[0] * FULL_IMAGE_SCALE)]
-        resized = cv2.resize(image, [new_h, new_w], interpolation=cv2.INTER_AREA)
+        new_w, new_h = [int(image.shape[1] * FULL_IMAGE_SCALE), int(image.shape[0] * FULL_IMAGE_SCALE)]
+        resized = cv2.resize(image, [new_w, new_h], interpolation=cv2.INTER_AREA)
         cv2.imwrite(storage_filepath, resized, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
 
         # Find the dominant color in this image
