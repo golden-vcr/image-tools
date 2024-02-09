@@ -60,13 +60,13 @@ the back of the case, and a `c` image for the labeled side of the cassette. A ta
 no case may simply have an `a` image showing the cassette. Scans of other relevant
 sides, included printed materials, etc., may be saved as `d`, `e`, and so on.
 
-The [`renumber.sh`](./renumber.sh) script allows us to quickly rename tape images en
+The [`renumber.py`](./renumber.py) script allows us to quickly rename tape images en
 masse as we scan them. To get started scanning:
 
 - Turn on your scanner, open the lid, and clean the glass if necessary.
 - Open NAPS2.
 - Open a file explorer window in the `scans` directory.
-- Open a bash shell in the root of this repo.
+- Open a shell in the root of this repo.
 
 Each image should be scanned with the tape pressed flush against both sides of the
 scanner as indicated by the registration mark. You can initiate a scan from NAPS2 by
@@ -80,15 +80,11 @@ For each tape, proceeding in sequence based on ID number:
 3. If the tape contains supplemental printed materials, or if the edges of the tape or
    case contain relevant information that should be captured, create more scans as
    needed.
-4. In your bash shell, run `./renumber.sh -i <tape-id>`, where `<tape-id>` is the ID
-   with which this tape has been labeled.
+4. In your shell, run `python3 renumber.py`.
      - This should automatically rename the new images in your `scans` directory, e.g.
        from `scan_0001.png`, `scan_0002.png`, etc. to `0053_a.png`, `0053_b.png`, etc.
-     - You can supply the `-n` flag to dry-run the command and preview the renames it
-       would perform.
-     - Once you have at least one set of renamed tape images in the scans directory,
-       you can omit the `-i` argument: the script will continue numbering scans
-       sequentially based on the highest-numbered tape images present in the directory.
+     - The tape ID assigned to the images will be the next ID in the sequence, based on
+       the existin gimages in the `scans` directory.
 
 Once you've scanned all the tapes that you previously catalogued, you can grab another
 batch of tapes and add them to the spreadsheet. When you've finished scanning and are
